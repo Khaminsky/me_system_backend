@@ -14,6 +14,9 @@ class Survey(models.Model):
     cleaned = models.BooleanField(default=False)
     cleaned_date = models.DateTimeField(null=True, blank=True)
     cleaned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='cleaned_by', blank=True)
+    is_archived = models.BooleanField(default=False)
+    archived_date = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='archived_surveys', blank=True)
 
     def __str__(self):
         return self.name
