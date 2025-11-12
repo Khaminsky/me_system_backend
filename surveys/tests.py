@@ -45,7 +45,8 @@ class SurveyDetailViewTests(TestCase):
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password='testpass123',
+            role='analyst'
         )
         self.client.force_authenticate(user=self.user)
 

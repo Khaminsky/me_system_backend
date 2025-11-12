@@ -4,12 +4,12 @@ from .models import Indicator, IndicatorValue, IndicatorTarget
 
 class IndicatorSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source='created_by.username', read_only=True)
-    
+
     class Meta:
         model = Indicator
         fields = [
             'id', 'name', 'description', 'indicator_type', 'unit',
-            'baseline', 'target', 'formula', 'is_active',
+            'baseline', 'target', 'formula', 'is_active', 'filter_criteria',
             'created_at', 'updated_at', 'created_by', 'created_by_username'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'created_by_username']

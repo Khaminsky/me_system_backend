@@ -4,7 +4,7 @@ charset-normalizer==3.4.4
 Django==5.2.7
 django-cors-headers==4.9.0
 djangorestframework==3.16.1
-djangorestframework-simplejwt==5.3.2
+djangorestframework-simplejwt==5.3.1
 dotenv==0.9.9
 drf-yasg==1.21.11
 gunicorn==23.0.0
@@ -14,13 +14,13 @@ itypes==1.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 numpy==2.3.4
-openpyxl==3.11.0
+openpyxl==3.1.5
 packaging==25.0
 pandas==2.3.3
 psycopg2-binary==2.9.11
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
-PyJWT==2.8.1
+PyJWT==2.10.1
 PyYAML==6.0.3
 pytz==2025.2
 requests==2.32.5

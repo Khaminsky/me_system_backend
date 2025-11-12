@@ -82,7 +82,7 @@ class IndicatorComputationService:
     def _evaluate_formula(self, formula: str, df: pd.DataFrame) -> float:
         """
         Evaluate a formula string against the DataFrame.
-        
+
         Supported functions:
         - COUNT(column): Count non-null values
         - SUM(column): Sum of values
@@ -90,20 +90,20 @@ class IndicatorComputationService:
         - MIN(column): Minimum value
         - MAX(column): Maximum value
         - PERCENTAGE(column, value): Percentage of rows where column == value
-        
+
         Args:
             formula: Formula string
             df: DataFrame to evaluate against
-            
+
         Returns:
             Computed value
         """
         # Replace function calls with actual computations
-        formula_eval = formula.upper()
-        
+        formula_eval = formula
+
         # COUNT function
         count_pattern = r'COUNT\((\w+)\)'
-        for match in re.finditer(count_pattern, formula_eval):
+        for match in re.finditer(count_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             if column in df.columns:
                 count_value = df[column].count()
@@ -111,39 +111,39 @@ class IndicatorComputationService:
         
         # SUM function
         sum_pattern = r'SUM\((\w+)\)'
-        for match in re.finditer(sum_pattern, formula_eval):
+        for match in re.finditer(sum_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             if column in df.columns:
                 sum_value = pd.to_numeric(df[column], errors='coerce').sum()
                 formula_eval = formula_eval.replace(match.group(0), str(sum_value))
-        
+
         # AVG function
         avg_pattern = r'AVG\((\w+)\)'
-        for match in re.finditer(avg_pattern, formula_eval):
+        for match in re.finditer(avg_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             if column in df.columns:
                 avg_value = pd.to_numeric(df[column], errors='coerce').mean()
                 formula_eval = formula_eval.replace(match.group(0), str(avg_value))
-        
+
         # MIN function
         min_pattern = r'MIN\((\w+)\)'
-        for match in re.finditer(min_pattern, formula_eval):
+        for match in re.finditer(min_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             if column in df.columns:
                 min_value = pd.to_numeric(df[column], errors='coerce').min()
                 formula_eval = formula_eval.replace(match.group(0), str(min_value))
-        
+
         # MAX function
         max_pattern = r'MAX\((\w+)\)'
-        for match in re.finditer(max_pattern, formula_eval):
+        for match in re.finditer(max_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             if column in df.columns:
                 max_value = pd.to_numeric(df[column], errors='coerce').max()
                 formula_eval = formula_eval.replace(match.group(0), str(max_value))
-        
+
         # PERCENTAGE function
         percentage_pattern = r'PERCENTAGE\((\w+),\s*[\'"]?(\w+)[\'"]?\)'
-        for match in re.finditer(percentage_pattern, formula_eval):
+        for match in re.finditer(percentage_pattern, formula_eval, re.IGNORECASE):
             column = match.group(1)
             value = match.group(2)
             if column in df.columns:

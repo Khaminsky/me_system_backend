@@ -15,6 +15,9 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput || true
 
+echo "Setting up admin user..."
+python manage.py setup_admin || echo "Note: Could not run setup_admin command"
+
 echo "Starting application..."
 exec "$@"
 

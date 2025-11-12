@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import IndicatorViewSet, IndicatorValueViewSet, IndicatorTargetViewSet, IndicatorComputationView
 
 router = DefaultRouter()
-router.register(r'indicators', IndicatorViewSet, basename='indicator')
+router.register(r'', IndicatorViewSet, basename='indicator')
 router.register(r'values', IndicatorValueViewSet, basename='indicator-value')
 router.register(r'targets', IndicatorTargetViewSet, basename='indicator-target')
 

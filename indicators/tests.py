@@ -52,7 +52,8 @@ class IndicatorComputationViewTests(TestCase):
             name='Total Cases',
             description='Count of all cases',
             formula='COUNT(cases)',
-            indicator_type='count',
+            indicator_type='output',
+            unit='count',
             created_by=self.analyst_user,
             is_active=True
         )
@@ -61,7 +62,8 @@ class IndicatorComputationViewTests(TestCase):
             name='Total Recovered',
             description='Sum of recovered cases',
             formula='SUM(recovered)',
-            indicator_type='sum',
+            indicator_type='outcome',
+            unit='count',
             created_by=self.analyst_user,
             is_active=True
         )
@@ -70,7 +72,8 @@ class IndicatorComputationViewTests(TestCase):
             name='Average Cases',
             description='Average cases per region',
             formula='AVG(cases)',
-            indicator_type='average',
+            indicator_type='impact',
+            unit='count',
             created_by=self.analyst_user,
             is_active=True
         )
@@ -86,7 +89,7 @@ class IndicatorComputationViewTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('results', response.data)
+        self.assertIn('computed_indicators', response.data)
 
     def test_compute_multiple_indicators(self):
         """Test computing multiple indicators"""
@@ -103,7 +106,7 @@ class IndicatorComputationViewTests(TestCase):
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 3)
+        self.assertEqual(len(response.data['computed_indicators']), 3)
 
     def test_compute_creates_indicator_values(self):
         """Test that computation creates IndicatorValue records"""
@@ -163,7 +166,8 @@ class IndicatorComputationViewTests(TestCase):
             name='North Cases',
             description='Cases in North region',
             formula='COUNT(cases)',
-            indicator_type='count',
+            indicator_type='output',
+            unit='count',
             filter_criteria={'region': 'North'},
             created_by=self.analyst_user,
             is_active=True
@@ -200,9 +204,10 @@ class IndicatorViewSetTests(TestCase):
             'name': 'Test Indicator',
             'description': 'Test Description',
             'formula': 'SUM(value)',
-            'indicator_type': 'sum'
+            'indicator_type': 'output',
+            'unit': 'count'
         }
-        response = self.client.post('/api/indicators/indicators/', data, format='json')
+        response = self.client.post('/api/indicators/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Test Indicator')
 
@@ -212,11 +217,12 @@ class IndicatorViewSetTests(TestCase):
         Indicator.objects.create(
             name='Test Indicator',
             formula='COUNT(value)',
-            indicator_type='count',
+            indicator_type='output',
+            unit='count',
             created_by=self.analyst_user
         )
 
-        response = self.client.get('/api/indicators/indicators/')
+        response = self.client.get('/api/indicators/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
 
@@ -225,13 +231,14 @@ class IndicatorViewSetTests(TestCase):
         indicator = Indicator.objects.create(
             name='Original Name',
             formula='COUNT(value)',
-            indicator_type='count',
+            indicator_type='output',
+            unit='count',
             created_by=self.analyst_user
         )
 
         data = {'name': 'Updated Name'}
         response = self.client.patch(
-            f'/api/indicators/indicators/{indicator.id}/',
+            f'/api/indicators/{indicator.id}/',
             data,
             format='json'
         )
@@ -243,11 +250,12 @@ class IndicatorViewSetTests(TestCase):
         indicator = Indicator.objects.create(
             name='To Delete',
             formula='COUNT(value)',
-            indicator_type='count',
+            indicator_type='output',
+            unit='count',
             created_by=self.analyst_user
         )
 
-        response = self.client.delete(f'/api/indicators/indicators/{indicator.id}/')
+        response = self.client.delete(f'/api/indicators/{indicator.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # Verify deletion
