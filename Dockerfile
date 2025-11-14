@@ -18,6 +18,7 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt 
 COPY . .
 
 COPY entrypoint.sh /app/entrypoint.sh
+RUN dos2unix /app/entrypoint.sh 2>/dev/null || sed -i 's/\r$//' /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 RUN mkdir -p /app/uploads /app/cleaned_uploads

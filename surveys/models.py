@@ -27,6 +27,7 @@ class Survey(models.Model):
 class SurveyData(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
     data = models.JSONField()
+    sheet_name = models.CharField(max_length=255, blank=True, null=True, help_text="Name of the Excel sheet this data came from")
     created_at = models.DateTimeField(auto_now_add=True)
     cleaned_data = models.JSONField(null=True, blank=True)
     cleaned = models.BooleanField(default=False)
