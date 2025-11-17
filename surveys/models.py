@@ -1,8 +1,10 @@
 from django.db import models
 from django.conf import settings
+from projects.models import Project
 
 # Create your models here.
 class Survey(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='surveys', null=True, blank=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)

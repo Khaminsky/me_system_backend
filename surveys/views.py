@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from surveys.models import Survey, SurveyData
+from surveys.models import Project, Survey, SurveyData
 from .serializers import SurveySerializer
 from users.permissions import CanUploadSurvey, CanViewReports
 
@@ -24,10 +24,11 @@ class SurveyUploadView(APIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 'file': openapi.Schema(type=openapi.TYPE_FILE, description='Survey file'),
+                'project_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Project ID'),
                 'name': openapi.Schema(type=openapi.TYPE_STRING, description='Survey name'),
                 'description': openapi.Schema(type=openapi.TYPE_STRING, description='Survey description'),
             },
-            required=['file']
+            required=['file', 'project_id']
         ),
         responses={201: openapi.Response('Survey uploaded successfully')}
     )
@@ -35,6 +36,17 @@ class SurveyUploadView(APIView):
         # Check if file is provided
         if 'file' not in request.FILES:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if project_id is provided
+        project_id = request.data.get('project_id')
+        if not project_id:
+            return Response({'error': 'Project ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate project exists
+        try:
+            project = Project.objects.get(id=project_id, is_archived=False)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
         file_obj = request.FILES['file']
 
@@ -46,6 +58,7 @@ class SurveyUploadView(APIView):
         description = request.data.get('description', '')
 
         survey = Survey.objects.create(
+            project=project,
             name=name,
             description=description,
             uploaded_by=request.user,

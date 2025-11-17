@@ -17,6 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -38,11 +40,14 @@ def trigger_error(request):
     
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/projects/', include('projects.urls')),
     path('api/surveys/', include('surveys.urls')),
     path('api/users/', include('users.urls')),
     path('api/data-cleaning/', include('data_cleaning.urls')),
     path('api/indicators/', include('indicators.urls')),
     path('api/reports/', include('reports.urls')),
+    path('api/repository/', include('repository.urls')),
+    path('api/settings/', include('system_settings.urls')),
     path('api/schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('sentry-debug/', trigger_error),
@@ -50,4 +55,8 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api-auth/', include('rest_framework.urls')),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
