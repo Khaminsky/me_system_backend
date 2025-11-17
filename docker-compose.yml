@@ -40,6 +40,8 @@ services:
       - .:/app
       - uploads:/app/uploads
       - cleaned_uploads:/app/cleaned_uploads
+      - documents:/app/media/documents
+      - media:/app/media
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +52,8 @@ volumes:
   postgres_data:
   uploads:
   cleaned_uploads:
+  documents:
+  media:
 
 networks:
   me_system_network:
