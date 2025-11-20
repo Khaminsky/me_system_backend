@@ -40,6 +40,7 @@ def trigger_error(request):
     
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/analytics/', include('analytics.urls')),
     path('api/projects/', include('projects.urls')),
     path('api/surveys/', include('surveys.urls')),
     path('api/users/', include('users.urls')),
