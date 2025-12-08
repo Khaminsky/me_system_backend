@@ -57,43 +57,62 @@ class AnalyticsEngine:
         """
         data_items = dimensions.get('data', [])  # Indicator IDs
         period = dimensions.get('period', {})
-        
-        # Get indicator values
+
+        if not data_items:
+            print("No data items (indicators) specified")
+            return []
+
+        # Get indicator values for this project
+        # Filter by survey__project_id since indicators are global
         query = IndicatorValue.objects.filter(
             indicator_id__in=data_items,
-            indicator__project_id=self.project_id
+            survey__project_id=self.project_id
         )
-        
+
+        print(f"Fetching data for indicators: {data_items}, project: {self.project_id}")
+        print(f"Initial query count: {query.count()}")
+
         # Apply period filter
         if period.get('type') == 'relative':
             query = self._apply_relative_period(query, period.get('value'))
-        
+            print(f"After period filter: {query.count()}")
+
         # Apply additional filters
         for key, value in filters.items():
             # Apply filters based on survey data
             pass
-        
-        return list(query.values(
+
+        data = list(query.values(
             'indicator__name',
+            'indicator_id',
             'value',
             'period',
+            'calculated_at',
             'survey__name'
         ))
+
+        print(f"Fetched {len(data)} indicator values: {data}")
+
+        return data
     
     def _aggregate_data(self, data: List[Dict], layout: Dict) -> Dict:
         """
         Aggregate data based on layout configuration
         """
+        if not data:
+            print("No data to aggregate")
+            return {}
+
         rows = layout.get('rows', [])
         columns = layout.get('columns', [])
-        
+
         # Group data by rows and columns
         aggregated = {}
-        
+
         for item in data:
             row_key = self._get_dimension_key(item, rows)
             col_key = self._get_dimension_key(item, columns)
-            
+
             key = f"{row_key}_{col_key}"
             if key not in aggregated:
                 aggregated[key] = {
@@ -101,16 +120,18 @@ class AnalyticsEngine:
                     'column': col_key,
                     'values': []
                 }
-            
+
             aggregated[key]['values'].append(item['value'])
-        
+
         # Calculate aggregates (sum, avg, etc.)
         for key in aggregated:
             values = aggregated[key]['values']
             aggregated[key]['sum'] = sum(values)
             aggregated[key]['avg'] = sum(values) / len(values) if values else 0
             aggregated[key]['count'] = len(values)
-        
+
+        print(f"Aggregated data: {aggregated}")
+
         return aggregated
     
     def _format_for_visualization(
@@ -138,7 +159,7 @@ class AnalyticsEngine:
         Format data for Recharts
         """
         chart_data = []
-        
+
         for key, item in data.items():
             chart_data.append({
                 'name': item['row'],
@@ -146,7 +167,13 @@ class AnalyticsEngine:
                 'average': item['avg'],
                 'count': item['count']
             })
-        
+
+        # Add default labels if not provided
+        if 'xAxisLabel' not in options:
+            options['xAxisLabel'] = 'Period'
+        if 'yAxisLabel' not in options:
+            options['yAxisLabel'] = 'Value'
+
         return {
             'type': chart_type,
             'data': chart_data,
@@ -228,12 +255,12 @@ class AnalyticsEngine:
         Generate unique cache key for visualization
         """
         key_data = {
-            'viz_id': visualization.id,
+            'viz_id': visualization.id if hasattr(visualization, 'id') and visualization.id else 'preview',
             'dimensions': visualization.dimensions,
             'filters': visualization.filters,
-            'updated_at': visualization.updated_at.isoformat()
+            'updated_at': visualization.updated_at.isoformat() if hasattr(visualization, 'updated_at') and visualization.updated_at else 'preview'
         }
-        
+
         key_string = json.dumps(key_data, sort_keys=True)
         return hashlib.md5(key_string.encode()).hexdigest()
     
@@ -256,8 +283,12 @@ class AnalyticsEngine:
         """
         Save to cache with expiration
         """
+        # Only cache if visualization is saved (has an id)
+        if not hasattr(visualization, 'id') or visualization.id is None:
+            return
+
         expires_at = datetime.now() + timedelta(hours=24)
-        
+
         AnalyticsCache.objects.update_or_create(
             cache_key=cache_key,
             defaults={

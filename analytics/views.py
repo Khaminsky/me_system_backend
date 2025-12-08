@@ -53,18 +53,23 @@ class VisualizationViewSet(viewsets.ModelViewSet):
         POST /api/analytics/visualizations/preview/
         """
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
+        if not serializer.is_valid():
+            return Response(
+                {'error': 'Validation failed', 'details': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Create temporary visualization (don't save)
         temp_viz = Visualization(**serializer.validated_data)
         engine = AnalyticsEngine(temp_viz.project_id)
-        
+
         try:
             result = engine.evaluate_visualization(temp_viz)
             return Response(result)
         except Exception as e:
+            import traceback
             return Response(
-                {'error': str(e)},
+                {'error': str(e), 'traceback': traceback.format_exc()},
                 status=status.HTTP_400_BAD_REQUEST
             )
         # analytics/views.py - Add to VisualizationViewSet
@@ -232,6 +237,43 @@ class DashboardViewSet(viewsets.ModelViewSet):
             'dashboard': DashboardSerializer(dashboard).data,
             'items': items
         })
+
+    @action(detail=True, methods=['post'])
+    def add_visualization(self, request, pk=None):
+        """
+        Add a visualization to the dashboard
+        POST /api/analytics/dashboards/{id}/add_visualization/
+        Body: {
+            "visualization": <viz_id>,
+            "position": {"x": 0, "y": 0, "w": 6, "h": 4}
+        }
+        """
+        from .models import DashboardItem
+
+        dashboard = self.get_object()
+        visualization_id = request.data.get('visualization')
+        position = request.data.get('position', {})
+
+        if not visualization_id:
+            return Response(
+                {'error': 'visualization field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create dashboard item
+        item = DashboardItem.objects.create(
+            dashboard=dashboard,
+            visualization_id=visualization_id,
+            position_x=position.get('x', 0),
+            position_y=position.get('y', 0),
+            width=position.get('w', 6),
+            height=position.get('h', 4)
+        )
+
+        return Response({
+            'id': item.id,
+            'message': 'Visualization added to dashboard successfully'
+        }, status=status.HTTP_201_CREATED)
 
 
 class ProjectAnalyticsView(viewsets.ViewSet):
