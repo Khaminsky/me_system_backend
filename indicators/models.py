@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from surveys.models import Survey
+from projects.models import Project
 
 
 class Indicator(models.Model):
@@ -12,6 +13,7 @@ class Indicator(models.Model):
         ('impact', 'Impact'),
     ]
 
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='indicators', null=True, blank=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     indicator_type = models.CharField(max_length=20, choices=INDICATOR_TYPES)

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'reports',
     'repository',
     'system_settings',
+    'analytics',
 ]
 
 

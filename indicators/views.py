@@ -17,9 +17,18 @@ class IndicatorViewSet(viewsets.ModelViewSet):
     """
     API endpoint for managing M&E indicators.
     """
-    queryset = Indicator.objects.all()
     serializer_class = IndicatorSerializer
     permission_classes = [IsAuthenticated, CanComputeIndicators]
+
+    def get_queryset(self):
+        """Filter indicators by project"""
+        queryset = Indicator.objects.all()
+        project_id = self.request.query_params.get('project_id')
+        if project_id:
+            queryset = queryset.filter(project_id=project_id, is_active=True)
+        else:
+            queryset = queryset.filter(is_active=True)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -36,9 +45,16 @@ class IndicatorValueViewSet(viewsets.ModelViewSet):
     """
     API endpoint for indicator values.
     """
-    queryset = IndicatorValue.objects.all()
     serializer_class = IndicatorValueSerializer
     permission_classes = [IsAuthenticated, CanViewReports]
+
+    def get_queryset(self):
+        """Filter indicator values by project through indicator"""
+        queryset = IndicatorValue.objects.all()
+        project_id = self.request.query_params.get('project_id')
+        if project_id:
+            queryset = queryset.filter(indicator__project_id=project_id)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(calculated_by=self.request.user)
@@ -50,10 +66,17 @@ class IndicatorValueViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def by_indicator(self, request):
         indicator_id = request.query_params.get('indicator_id')
+        project_id = request.query_params.get('project_id')
+
         if not indicator_id:
             return Response({'error': 'indicator_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
 
         values = IndicatorValue.objects.filter(indicator_id=indicator_id)
+
+        # Filter by project if provided
+        if project_id:
+            values = values.filter(indicator__project_id=project_id)
+
         serializer = self.get_serializer(values, many=True)
         return Response(serializer.data)
 
@@ -62,9 +85,16 @@ class IndicatorTargetViewSet(viewsets.ModelViewSet):
     """
     API endpoint for indicator targets.
     """
-    queryset = IndicatorTarget.objects.all()
     serializer_class = IndicatorTargetSerializer
     permission_classes = [IsAuthenticated, CanComputeIndicators]
+
+    def get_queryset(self):
+        """Filter indicator targets by project through indicator"""
+        queryset = IndicatorTarget.objects.all()
+        project_id = self.request.query_params.get('project_id')
+        if project_id:
+            queryset = queryset.filter(indicator__project_id=project_id)
+        return queryset
 
     @swagger_auto_schema(
         operation_description="Get targets for a specific indicator",
@@ -73,10 +103,17 @@ class IndicatorTargetViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def by_indicator(self, request):
         indicator_id = request.query_params.get('indicator_id')
+        project_id = request.query_params.get('project_id')
+
         if not indicator_id:
             return Response({'error': 'indicator_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
 
         targets = IndicatorTarget.objects.filter(indicator_id=indicator_id)
+
+        # Filter by project if provided
+        if project_id:
+            targets = targets.filter(indicator__project_id=project_id)
+
         serializer = self.get_serializer(targets, many=True)
         return Response(serializer.data)
 
@@ -137,12 +174,16 @@ class IndicatorComputationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Get indicators
-            indicators = Indicator.objects.filter(id__in=indicator_ids, is_active=True)
+            # Get indicators - filter by project to ensure project isolation
+            indicators = Indicator.objects.filter(
+                id__in=indicator_ids,
+                is_active=True,
+                project_id=survey.project_id
+            )
 
             if not indicators.exists():
                 return Response(
-                    {'error': 'No active indicators found'},
+                    {'error': 'No active indicators found for this project'},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
