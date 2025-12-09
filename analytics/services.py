@@ -63,9 +63,10 @@ class AnalyticsEngine:
             return []
 
         # Get indicator values for this project
-        # Filter by survey__project_id since indicators are global
+        # Filter by both indicator project and survey project for double security
         query = IndicatorValue.objects.filter(
             indicator_id__in=data_items,
+            indicator__project_id=self.project_id,
             survey__project_id=self.project_id
         )
 

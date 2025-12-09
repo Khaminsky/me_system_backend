@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'me_system_backend/**'
-      - '.github/workflows/deploy-backend.yml'
-      - 'docker-compose.prod.yml'
   workflow_dispatch:  # Allow manual trigger
 
 env:
@@ -25,7 +21,6 @@ jobs:
 
       - name: Build Backend Docker image
         run: |
-          cd me_system_backend
           docker build -t ${{ env.BACKEND_IMAGE }} .
           docker save -o backend.tar ${{ env.BACKEND_IMAGE }}
 
@@ -33,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-image
-          path: me_system_backend/backend.tar
+          path: backend.tar
           retention-days: 1
 
   deploy:
