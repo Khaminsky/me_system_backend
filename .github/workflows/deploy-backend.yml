@@ -98,7 +98,7 @@ jobs:
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_HOST=db
           DB_PORT=5432
-          NEXT_PUBLIC_API_URL=http://backend:8000
+          NEXT_PUBLIC_API_URL=http://${{ secrets.DROPLET_IP }}:8000
           ENVEOF
             fi
             
