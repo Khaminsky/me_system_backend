@@ -59,7 +59,20 @@ INSTALLED_APPS = [
 ]
 
 
-CORS_ALLOW_ALL_ORIGINS = True 
+# CORS Configuration
+# For development, allow all origins
+# For production, specify allowed origins
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        'https://demo.orionmw.com',
+        'http://demo.orionmw.com',
+        'https://api.demo.orionmw.com',
+        'http://localhost:3000',  # For local development
+        'http://localhost:7200',  # For local development
+    ]
+    CORS_ALLOW_CREDENTIALS = True
 
 
 MIDDLEWARE = [
