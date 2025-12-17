@@ -69,6 +69,7 @@ else:
         'https://demo.orionmw.com',
         'http://demo.orionmw.com',
         'https://api.demo.orionmw.com',
+        'http://api.demo.orionmw.com',
         'http://localhost:3000',  # For local development
         'http://localhost:7200',  # For local development
     ]
