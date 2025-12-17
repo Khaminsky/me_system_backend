@@ -75,6 +75,17 @@ else:
     ]
     CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Configuration for production behind reverse proxy
+CSRF_TRUSTED_ORIGINS = [
+    'https://demo.orionmw.com',
+    'https://api.demo.orionmw.com',
+    'http://demo.orionmw.com',
+    'http://api.demo.orionmw.com',
+]
+
+# Trust X-Forwarded-Proto header from nginx reverse proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
